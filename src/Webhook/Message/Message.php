@@ -16,6 +16,8 @@ abstract class Message
     const USER_BALANCE = 'user_balance_operation';
     const GET_PIN_CODE = 'get_pincode';
     const AFS_REJECT = 'afs_reject';
+    const ORDER_PAID = 'order_paid';
+    const ORDER_CANCELED = 'order_canceled';
 
     protected static $classMap = [
         self::USER_VALIDATION => '\Xsolla\SDK\Webhook\Message\UserValidationMessage',
@@ -27,13 +29,20 @@ abstract class Message
         self::UPDATE_SUBSCRIPTION => '\Xsolla\SDK\Webhook\Message\UpdateSubscriptionMessage',
         self::USER_BALANCE => '\Xsolla\SDK\Webhook\Message\UserBalanceMessage',
         self::GET_PIN_CODE => '\Xsolla\SDK\Webhook\Message\GetPinCodeMessage',
-        self::AFS_REJECT => '\Xsolla\SDK\Webhook\Message\AfsRejectMessage'
+        self::AFS_REJECT => '\Xsolla\SDK\Webhook\Message\AfsRejectMessage',
+        self::ORDER_PAID => '\Xsolla\SDK\Webhook\Message\OrderPaidMessage',
+        self::ORDER_CANCELED => '\Xsolla\SDK\Webhook\Message\OrderCanceledMessage',
     ];
 
     /**
      * @var array
      */
     protected $request;
+
+    /**
+     * @var int
+     */
+    protected $apiVersion = 1;
 
     /**
      * @param array $request
@@ -66,7 +75,7 @@ abstract class Message
     /**
      * @return array
      */
-    public function toArray()
+    public function toArray():array
     {
         return $this->request;
     }
@@ -74,7 +83,7 @@ abstract class Message
     /**
      * @return string
      */
-    public function getNotificationType()
+    public function getNotificationType():string
     {
         return $this->request['notification_type'];
     }
@@ -82,7 +91,7 @@ abstract class Message
     /**
      * @return bool
      */
-    public function isUserValidation()
+    public function isUserValidation():bool
     {
         return self::USER_VALIDATION === $this->getNotificationType();
     }
@@ -90,7 +99,7 @@ abstract class Message
     /**
      * @return bool
      */
-    public function isPayment()
+    public function isPayment():bool
     {
         return self::PAYMENT === $this->getNotificationType();
     }
@@ -98,7 +107,7 @@ abstract class Message
     /**
      * @return bool
      */
-    public function isRefund()
+    public function isRefund():bool
     {
         return self::REFUND === $this->getNotificationType();
     }
@@ -106,7 +115,7 @@ abstract class Message
     /**
      * @return array
      */
-    public function getUser()
+    public function getUser():array
     {
         return $this->request['user'];
     }
@@ -114,8 +123,12 @@ abstract class Message
     /**
      * @return string
      */
-    public function getUserId()
+    public function getUserId():string
     {
+        if($this->apiVersion == 2)
+        {
+            return $this->request['user']['external_id'];
+        }
         return $this->request['user']['id'];
     }
 }
